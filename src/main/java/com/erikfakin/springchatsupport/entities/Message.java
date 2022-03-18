@@ -22,7 +22,7 @@ public class Message {
     private String sender = "sender";
 
     @ManyToOne
-    private ChatRoom chatroom;
+    private Chatroom chatroom;
 
 
     @PrePersist

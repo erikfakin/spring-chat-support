@@ -50,7 +50,7 @@ const Homepage = () => {
         {room && (
           <SockJsClient
             url={SOCKET_URL}
-            topics={["/chatroom/1"]}
+            topics={["/chatroom/" + room.id]}
             onConnect={onConnected}
             onDisconnect={console.log("Disconnected!")}
             onMessage={(msg) => onMessageReceived(msg)}
@@ -62,7 +62,7 @@ const Homepage = () => {
           onClick={() => {
             console.log("sending")
             clientRef.current.sendMessage(
-              "/app/send",
+              "/app/send/" + room.id,
               JSON.stringify({
                 content: "hello",
               })
