@@ -9,6 +9,7 @@ const SOCKET_URL = "http://localhost:8080/ws"
 const Homepage = () => {
   const [room, setRoom] = useState()
   const [message, setMessage] = useState([])
+  const [roomsList, setRoomsList] = useState([])
 
   // var sock = new SockJS("http://localhost:8080/ws")
   // let stompClient = Stomp.over(sock)
@@ -25,7 +26,8 @@ const Homepage = () => {
 
   const clientRef = useRef(null)
 
-  let onConnected = () => {
+  let onConnected = (e) => {
+    console.log(e)
     console.log("Connected!!")
   }
 
@@ -35,7 +37,18 @@ const Homepage = () => {
   }
 
   const getChatRoom = async () => {
-    const res = await fetch("http://localhost:8080/room")
+    const res = await fetch("http://localhost:8080/room", {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: JSON.stringify({
+        name: "e",
+        email: "fg"
+      })
+    })
+    console.log(res)
 
     setRoom(await res.json())
   }
@@ -43,6 +56,13 @@ const Homepage = () => {
   useEffect(() => {
     getChatRoom()
   }, [])
+
+  useEffect(() => {console.log(roomsList)}, [roomsList])
+
+  const getRooms= async (status) => {
+    const res = await fetch("http://localhost:8080/room/OFFLINE")
+    setRoomsList(await res.json())
+  }
 
   return (
     <div className="homepage">
@@ -56,6 +76,13 @@ const Homepage = () => {
             onMessage={(msg) => onMessageReceived(msg)}
             debug={true}
             ref={clientRef}
+            options={{
+              sessionId: () => {
+                
+                const sessionId = Math.random().toString(36).slice(-10);
+                return "client-"+sessionId
+             }
+            }}
           />
         )}
         <div
@@ -72,6 +99,10 @@ const Homepage = () => {
           send
         </div>
         <div>{message}</div>
+        <button onClick={e => {getRooms()}}>Get all</button>
+        <button onClick={e => {}}>Get all online</button>
+        <button onClick={e => {}}>Get all offline</button>
+
       </div>
     </div>
   )

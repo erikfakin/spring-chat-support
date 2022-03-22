@@ -21,6 +21,12 @@ public class Message {
 
     private String sender = "sender";
 
+    private Status status;
+
+    public enum Status {
+        NEW, SEEN
+    }
+
     @ManyToOne
     private Chatroom chatroom;
 

@@ -16,8 +16,18 @@ public class Chatroom {
     @Column(name = "id")
     private UUID id;
 
+    private Status status;
+
+    public enum Status {
+        ONLINE, OFFLINE
+    }
+
     @ManyToOne
     private ClientUser clientUser;
+
+    private String sessionId;
+
+    private UUID clientUserSession;
 
 
 
