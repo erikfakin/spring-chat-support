@@ -1,8 +1,10 @@
 package com.erikfakin.springchatsupport.services;
 
+import com.erikfakin.springchatsupport.entities.Chatroom;
 import com.erikfakin.springchatsupport.entities.Notification;
 import com.erikfakin.springchatsupport.repositories.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +14,9 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService{
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private SimpMessagingTemplate template;
 
 
     public List<Notification> getAllNewNotifications() {
@@ -29,4 +34,22 @@ public class NotificationServiceImpl implements NotificationService{
     public Notification save(Notification notification) {
         return notificationRepository.save(notification);
     }
+
+    @Override
+    public List<Notification> findAll() {
+        return notificationRepository.findAll();
+    }
+
+    @Override
+    public void sendNotification(Notification.Type type, Chatroom chatroom) {
+        Notification notification = new Notification();
+        notification.setStatus(Notification.Status.NEW);
+        notification.setType(type);
+        notification.setChatroom(chatroom);
+        save(notification);
+        template.convertAndSend("/chatroom/notifications", notification);
+        template.convertAndSend("/chatroom/"+chatroom.getId(), notification);
+    }
+
+
 }

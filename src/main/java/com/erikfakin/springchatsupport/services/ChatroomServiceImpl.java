@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ChatroomServiceImpl implements ChatroomService {
@@ -27,5 +29,15 @@ public class ChatroomServiceImpl implements ChatroomService {
     @Override
     public List<Chatroom> findAllByStatus(Chatroom.Status status) {
         return chatroomRepository.findAllByStatus(status);
+    }
+
+    @Override
+    public Chatroom findBySessionId(String chatroomId) {
+        return chatroomRepository.findBySessionId(chatroomId.toString());
+    }
+
+    @Override
+    public Optional<Chatroom> findById(UUID roomId) {
+        return chatroomRepository.findById(roomId);
     }
 }

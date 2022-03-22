@@ -17,6 +17,9 @@ public class NotificationController {
     private NotificationServiceImpl notificationService;
 
 
+    @GetMapping()
+    public List<Notification> getAllNotifications() {return notificationService.findAll();}
+
     @GetMapping("/new")
     public List<Notification> getAllNewNotifications() {
         return notificationService.getAllNewNotifications();

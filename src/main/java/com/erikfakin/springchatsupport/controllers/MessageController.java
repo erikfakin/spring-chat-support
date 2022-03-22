@@ -45,7 +45,8 @@ public class MessageController {
         notification.setChatroom(chatroom);
         notificationService.save(notification);
 
-        template.convertAndSend("/chatroom/"+chatroomId, message);
+
+        template.convertAndSend("/chatroom/"+chatroomId, notification);
         template.convertAndSend("/chatroom/notifications", notification);
 
     }
