@@ -8,8 +8,6 @@ import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findAllByChatroomId(UUID chatroomId);
-
-    List<Message> findAllByChatroomIdAndStatus(UUID chatroomId, Message.Status status);
-
-    Long countByChatroomIdAndStatus(UUID chatroomId, Message.Status status);
+    Long countByChatroomIdAndSenderAndSeenIsNull(UUID chatroomId, String sender);
+    List<Message> findAllByChatroomIdAndSenderAndSeenIsNull(UUID chatroomId, String sender);
 }

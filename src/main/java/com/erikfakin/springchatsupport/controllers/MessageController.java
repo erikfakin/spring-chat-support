@@ -11,9 +11,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
@@ -26,43 +24,34 @@ public class MessageController {
     @Autowired
     private SimpMessagingTemplate template;
     @Autowired
-    private MessageService messageService
-            ;
+    private MessageService messageService;
     @Autowired
     private ChatroomRepository chatRoomRepository;
     @Autowired
     private NotificationService notificationService;
 
-    @MessageMapping("/send/{chatroomId}")
-    public void sendMessage(@Header("simpSessionId") String sessionId, @DestinationVariable String chatroomId, Message message) throws Exception {
-        System.out.println("MEssage send in:" + sessionId);
-
-        Message messageToSave = new Message();
-        messageToSave.setContent(message.getContent());
-        Optional<Chatroom> chatroomOptional = chatRoomRepository.findById(UUID.fromString(chatroomId));
-        if (!chatroomOptional.isPresent()) {
+    @PostMapping("/messages/{chatroomId}")
+    public Message sendMessage(@PathVariable("chatroomId") UUID chatroomId, @RequestParam("sender") String sender, @RequestBody Message message) {
+        Optional<Chatroom> chatroomOptional = chatRoomRepository.findById(chatroomId);
+        if (chatroomOptional.isEmpty()) {
             throw new EntityNotFoundException("Chatroom not found");
         }
         Chatroom chatroom = chatroomOptional.get();
-        messageToSave.setChatroom(chatroom);
-        messageToSave.setStatus(Message.Status.NEW);
-        if (sessionId.contains("client")) {
-            messageToSave.setSender("client");
-        } else {
-            messageToSave.setSender("support");
-        }
-        messageService.save(messageToSave);
+        message.setChatroom(chatroom);
+        message.setSender(sender);
 
         Notification notification = new Notification();
         notification.setType(Notification.Type.MESSAGE_NEW);
-        notification.setStatus(Notification.Status.NEW);
         notification.setChatroom(chatroom);
-        notificationService.save(notification);
 
+        if (sender == "support") {
+            template.convertAndSend("/chatroom/"+chatroomId, notification);
+        } else {
+            template.convertAndSend("/chatroom/notifications", notification);
+        }
 
-        template.convertAndSend("/chatroom/"+chatroomId, notification);
-        template.convertAndSend("/chatroom/notifications", notification);
-
+        Message saved = messageService.save(message);
+        return saved;
     }
 
     @GetMapping("/messages/{chatroomId}")
@@ -70,14 +59,19 @@ public class MessageController {
         return messageService.findAllByChatroomId(chatroomId);
     }
 
-    @GetMapping("/messages/new/{chatroomId}")
-    public List<Message> findAllNewMessagesByChatroomId(@PathVariable("chatroomId") UUID chatroomId) {
-        return messageService.findAllByChatroomIdAndStatus(chatroomId, Message.Status.NEW);
+    @GetMapping("/messages/new/client/{chatroomId}")
+    public List<Message> findAllNewMessagesForClientByChatroomId(@PathVariable("chatroomId") UUID chatroomId) {
+        return messageService.findAllNewByChatroomId("support", chatroomId);
     }
 
-    @GetMapping("/messages/new/{chatroomId}/count")
+    @GetMapping("/messages/new/support/{chatroomId}")
+    public List<Message> findAllNewMessagesForSupportByChatroomId(@PathVariable("chatroomId") UUID chatroomId) {
+        return messageService.findAllNewByChatroomId("client", chatroomId);
+    }
+
+    @GetMapping("/messages/new/support/{chatroomId}/count")
     public Long countAllNewMessagesByChatroomId(@PathVariable("chatroomId") UUID chatroomId) {
-        return messageService.countByChatroomIdAndStatus(chatroomId, Message.Status.NEW);
+        return messageService.countNewByChatroomId(chatroomId);
 
     }
 

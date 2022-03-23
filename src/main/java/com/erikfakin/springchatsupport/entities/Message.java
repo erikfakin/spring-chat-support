@@ -19,13 +19,8 @@ public class Message {
     @Column(nullable = false)
     private Date timestamp;
 
-    private String sender = "sender";
-
-    private Status status;
-
-    public enum Status {
-        NEW, SEEN
-    }
+    private String sender;
+    private Date seen;
 
     @ManyToOne
     private Chatroom chatroom;

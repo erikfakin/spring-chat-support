@@ -10,9 +10,10 @@ public interface MessageService {
 
     List<Message> findAllByChatroomId(UUID chatroomId);
 
-    List<Message> findAllByChatroomIdAndStatus(UUID chatroomId, Message.Status aNew);
-
     List<Message> findAll();
 
-    Long countByChatroomIdAndStatus(UUID chatroomId, Message.Status aNew);
+    Long countNewByChatroomId(UUID chatroomId);
+
+    List<Message> findAllNewByChatroomId(String sender, UUID chatroomId);
+
 }
