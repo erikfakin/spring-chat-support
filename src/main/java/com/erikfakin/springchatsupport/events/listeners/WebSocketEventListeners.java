@@ -37,15 +37,19 @@ public class WebSocketEventListeners {
 
     @EventListener
     public void onSocketDisconnected(SessionDisconnectEvent event) {
-        Chatroom chatroom = chatroomService.findBySessionId(event.getSessionId());
-        chatroom.setStatus(Chatroom.Status.OFFLINE);
-        chatroomService.save(chatroom);
-        List<Chatroom> chatrooms = chatroomService.findAll();
-        System.out.println(chatrooms);
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
         System.out.println("[Disonnected] " + sha.getSessionId());
 
-        notificationService.sendNotification(Notification.Type.CHATROOM_OFFLINE, chatroom);
+        if (sha.getSessionId().contains("client")) {
+            Chatroom chatroom = chatroomService.findBySessionId(sha.getSessionId());
+            chatroom.setStatus(Chatroom.Status.OFFLINE);
+            chatroomService.save(chatroom);
+            List<Chatroom> chatrooms = chatroomService.findAll();
+            System.out.println(chatrooms);
+
+            notificationService.sendNotification(Notification.Type.CHATROOM_OFFLINE, chatroom);
+        }
+
 
 
 
@@ -56,15 +60,18 @@ public class WebSocketEventListeners {
     public void onSessionSubscribe(SessionSubscribeEvent event){
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
         String destination = sha.getDestination();
-        String sessionId = sha.getSessionId();
-        UUID roomId = UUID.fromString(destination.substring(destination.lastIndexOf("/") + 1).trim());
-        Chatroom chatroom = chatroomService.findById(roomId).get();
+        if (Objects.nonNull(destination) && !destination.contains("notifications")) {
+            String sessionId = sha.getSessionId();
+            UUID roomId = UUID.fromString(destination.substring(destination.lastIndexOf("/") + 1).trim());
+            Chatroom chatroom = chatroomService.findById(roomId).get();
 
-        if (Objects.isNull(chatroom.getSessionId()) && sessionId.contains("client")){
-            chatroom.setSessionId(sessionId);
-            chatroomService.save(chatroom);
+            if (Objects.isNull(chatroom.getSessionId()) && sessionId.contains("client")){
+                chatroom.setSessionId(sessionId);
+                chatroomService.save(chatroom);
+            }
+            notificationService.sendNotification(Notification.Type.CHATROOM_ONLINE, chatroom);
         }
-        notificationService.sendNotification(Notification.Type.CHATROOM_ONLINE, chatroom);
+
 
 
     }

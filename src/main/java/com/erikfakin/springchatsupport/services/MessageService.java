@@ -13,4 +13,6 @@ public interface MessageService {
     List<Message> findAllByChatroomIdAndStatus(UUID chatroomId, Message.Status aNew);
 
     List<Message> findAll();
+
+    Long countByChatroomIdAndStatus(UUID chatroomId, Message.Status aNew);
 }

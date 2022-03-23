@@ -46,9 +46,9 @@ public class NotificationServiceImpl implements NotificationService{
         notification.setStatus(Notification.Status.NEW);
         notification.setType(type);
         notification.setChatroom(chatroom);
-        save(notification);
-        template.convertAndSend("/chatroom/notifications", notification);
-        template.convertAndSend("/chatroom/"+chatroom.getId(), notification);
+        Notification savedNotification = save(notification);
+        template.convertAndSend("/chatroom/notifications", savedNotification);
+        template.convertAndSend("/chatroom/"+chatroom.getId(), savedNotification);
     }
 
 

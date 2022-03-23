@@ -8,13 +8,16 @@ import com.erikfakin.springchatsupport.services.MessageService;
 import com.erikfakin.springchatsupport.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -31,12 +34,23 @@ public class MessageController {
     private NotificationService notificationService;
 
     @MessageMapping("/send/{chatroomId}")
-    public void sendMessage(@DestinationVariable String chatroomId, Message message) throws Exception {
+    public void sendMessage(@Header("simpSessionId") String sessionId, @DestinationVariable String chatroomId, Message message) throws Exception {
+        System.out.println("MEssage send in:" + sessionId);
 
         Message messageToSave = new Message();
         messageToSave.setContent(message.getContent());
-        Chatroom chatroom = chatRoomRepository.findById(UUID.fromString(chatroomId)).get();
+        Optional<Chatroom> chatroomOptional = chatRoomRepository.findById(UUID.fromString(chatroomId));
+        if (!chatroomOptional.isPresent()) {
+            throw new EntityNotFoundException("Chatroom not found");
+        }
+        Chatroom chatroom = chatroomOptional.get();
         messageToSave.setChatroom(chatroom);
+        messageToSave.setStatus(Message.Status.NEW);
+        if (sessionId.contains("client")) {
+            messageToSave.setSender("client");
+        } else {
+            messageToSave.setSender("support");
+        }
         messageService.save(messageToSave);
 
         Notification notification = new Notification();
@@ -59,6 +73,12 @@ public class MessageController {
     @GetMapping("/messages/new/{chatroomId}")
     public List<Message> findAllNewMessagesByChatroomId(@PathVariable("chatroomId") UUID chatroomId) {
         return messageService.findAllByChatroomIdAndStatus(chatroomId, Message.Status.NEW);
+    }
+
+    @GetMapping("/messages/new/{chatroomId}/count")
+    public Long countAllNewMessagesByChatroomId(@PathVariable("chatroomId") UUID chatroomId) {
+        return messageService.countByChatroomIdAndStatus(chatroomId, Message.Status.NEW);
+
     }
 
     @GetMapping("/messages")

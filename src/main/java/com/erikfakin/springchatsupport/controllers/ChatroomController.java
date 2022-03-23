@@ -15,9 +15,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -63,17 +61,23 @@ public class ChatroomController {
         notification.setType(Notification.Type.CHATROOM_ONLINE);
         notification.setChatroom(savedChatroom);
 
-
-        notificationService.save(notification);
+//
+//        notificationService.save(notification);
         template.convertAndSend("/chatroom/notifications", notification);
 
 
         return savedChatroom;
     }
 
-    @GetMapping("/{status}")
-    public List<Chatroom> findAllByStatus(@PathVariable("status") Chatroom.Status status) {
-        return chatroomService.findAllByStatus(status);
+    @GetMapping("/{id}")
+    public Chatroom findById(@PathVariable("id") UUID id) {
+        return chatroomService.findById(id).get();
+    }
+
+    @GetMapping("/status/{status}")
+    public List<Chatroom> findAllByStatus(@PathVariable("status") String status) {
+        Chatroom.Status chatroomStatus = Chatroom.Status.valueOf(status.toUpperCase());
+        return chatroomService.findAllByStatus(chatroomStatus);
     }
 
     @GetMapping("/all")

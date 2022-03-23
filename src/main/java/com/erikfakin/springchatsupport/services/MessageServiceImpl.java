@@ -59,4 +59,9 @@ public class MessageServiceImpl implements MessageService{
     public List<Message> findAll() {
         return messageRepository.findAll();
     }
+
+    @Override
+    public Long countByChatroomIdAndStatus(UUID chatroomId, Message.Status status) {
+        return messageRepository.countByChatroomIdAndStatus(chatroomId, status);
+    }
 }

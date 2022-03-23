@@ -25,6 +25,7 @@ public class Chatroom {
     @ManyToOne
     private ClientUser clientUser;
 
+    @Column(unique = true)
     private String sessionId;
 
     private UUID clientUserSession;
