@@ -8,6 +8,5 @@ import java.util.UUID;
 
 public interface ChatroomRepository extends JpaRepository<Chatroom, UUID> {
     Chatroom findBySessionId(String sessionId);
-
     List<Chatroom> findAllByStatus(Chatroom.Status status);
 }

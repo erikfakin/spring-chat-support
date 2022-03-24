@@ -70,9 +70,10 @@ const Dashboard = () => {
     getMessages()
   }, [room])
 
+  useEffect(() => {console.log(messages)}, [messages])
+
   return (
     <div className="dashboard">
-      {console.log(room)}
       <div className="dashboard__chatroomsMenu">
         <SockJsClient
           url={SOCKET_URL}
@@ -88,7 +89,8 @@ const Dashboard = () => {
                 getRoomById(chatroom.id)
               }}
             >
-              {chatroom.id}
+              {chatroom.clientUser.name}
+             
             </div>
           )
         })}
@@ -96,13 +98,6 @@ const Dashboard = () => {
       <div className="dashboard__chatroom">
         {room && (
           <>
-            <SockJsClient
-              url={SOCKET_URL}
-              topics={["/chatroom/" + room?.id]}
-              onMessage={(msg) => handleMessageReceived(msg)}
-              debug={true}
-              ref={roomRef}
-            />
             {messages.map((message) => (
               <p>{message.content}</p>
             ))}

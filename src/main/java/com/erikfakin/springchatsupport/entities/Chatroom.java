@@ -28,8 +28,4 @@ public class Chatroom {
     @Column(unique = true)
     private String sessionId;
 
-    private UUID clientUserSession;
-
-
-
 }

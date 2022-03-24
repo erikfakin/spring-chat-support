@@ -6,14 +6,13 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
-    Message save(Message messageToSave);
+    Long countNewByChatroomId(UUID chatroomId);
 
     List<Message> findAllByChatroomId(UUID chatroomId);
 
-    List<Message> findAll();
-
-    Long countNewByChatroomId(UUID chatroomId);
-
     List<Message> findAllNewByChatroomId(String sender, UUID chatroomId);
 
+    Message save(Message messageToSave);
+
+    Message sendMessage(UUID chatroomId, String sender, Message message);
 }

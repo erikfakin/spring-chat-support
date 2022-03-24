@@ -1,21 +1,20 @@
 package com.erikfakin.springchatsupport.events.listeners;
 
 import com.erikfakin.springchatsupport.entities.Chatroom;
-import com.erikfakin.springchatsupport.entities.Notification;
+import com.erikfakin.springchatsupport.models.Notification;
 import com.erikfakin.springchatsupport.services.ChatroomService;
-import com.erikfakin.springchatsupport.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
-import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
-import java.util.List;
+
+import javax.persistence.EntityNotFoundException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Configuration
@@ -25,37 +24,11 @@ public class WebSocketEventListeners {
     private ChatroomService chatroomService;
 
     @Autowired
-    private NotificationService notificationService;
+    private SimpMessagingTemplate template;
 
-    @EventListener
-    public void onSocketConnected(SessionConnectedEvent event) {
-//        System.out.println(event);
-        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
-        System.out.println("[Connected] " + sha.getSessionId());
-    }
-
-
-    @EventListener
-    public void onSocketDisconnected(SessionDisconnectEvent event) {
-        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
-        System.out.println("[Disonnected] " + sha.getSessionId());
-
-        if (sha.getSessionId().contains("client")) {
-            Chatroom chatroom = chatroomService.findBySessionId(sha.getSessionId());
-            chatroom.setStatus(Chatroom.Status.OFFLINE);
-            chatroomService.save(chatroom);
-            List<Chatroom> chatrooms = chatroomService.findAll();
-            System.out.println(chatrooms);
-
-            notificationService.sendNotification(Notification.Type.CHATROOM_OFFLINE, chatroom);
-        }
-
-
-
-
-
-    }
-
+    // Associates the session ID of the client with the chatroom.
+    // If the destination contains "notifications" we don't want to affect the chatrooms (the support user only listens to notifications globally
+    // We want to associate the client session with the chatroom, so we can mark it as offline once the client disconnects.
     @EventListener
     public void onSessionSubscribe(SessionSubscribeEvent event){
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
@@ -63,39 +36,39 @@ public class WebSocketEventListeners {
         if (Objects.nonNull(destination) && !destination.contains("notifications")) {
             String sessionId = sha.getSessionId();
             UUID roomId = UUID.fromString(destination.substring(destination.lastIndexOf("/") + 1).trim());
-            Chatroom chatroom = chatroomService.findById(roomId).get();
+            Optional<Chatroom> chatroomOptional = chatroomService.findById(roomId);
+            if (chatroomOptional.isEmpty()) throw new EntityNotFoundException("Chatroom not found.");
+            Chatroom chatroom = chatroomOptional.get();
 
             if (Objects.isNull(chatroom.getSessionId()) && sessionId.contains("client")){
                 chatroom.setSessionId(sessionId);
                 chatroomService.save(chatroom);
             }
-            notificationService.sendNotification(Notification.Type.CHATROOM_ONLINE, chatroom);
+            Notification notification = new Notification();
+            notification.setType(Notification.Type.CHATROOM_ONLINE);
+            notification.setChatroom(chatroom);
+            template.convertAndSend("/chatroom/notifications", notification);
         }
-
-
-
     }
 
+
+    // Listens for the client to disconnect then finds the chatroom associated with the client session and marks it offline.
     @EventListener
-    public void onSessionUnsubscribe(SessionUnsubscribeEvent event){
+    public void onSocketDisconnected(SessionDisconnectEvent event) {
+        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
 
-        System.out.println("Disconnected!!!");
+        if (sha.getSessionId().contains("client")) {
+            Chatroom chatroom = chatroomService.findBySessionId(sha.getSessionId());
+            chatroom.setStatus(Chatroom.Status.OFFLINE);
+            chatroomService.save(chatroom);
 
-        System.out.println(event.getMessage().getHeaders().get("simpDestination"));
-
-//        String destination = event.getMessage().getHeaders().get("simpDestination").toString();
-//        UUID roomId = UUID.fromString(destination.substring(destination.lastIndexOf("/") + 1).trim());
-//        String sessionId = event.getMessage().getHeaders().get("simpSessionId").toString();
-//        Chatroom chatroom = chatroomRepository.findById(roomId).get();
-//        if (Objects.isNull(chatroom.getSessionId()){
-//            chatroom.setSessionId(sessionId);
-//            chatroomRepository.save(chatroom);
-//        }
-//
-//        List<Chatroom> chatrooms = chatroomRepository.findAll();
-//
-//        System.out.println(chatrooms);
-
-//        System.out.println(sessionId);
+            Notification notification = new Notification();
+            notification.setType(Notification.Type.CHATROOM_OFFLINE);
+            notification.setChatroom(chatroom);
+            template.convertAndSend("/chatroom/notifications", notification);
+        }
     }
+
+
+
 }

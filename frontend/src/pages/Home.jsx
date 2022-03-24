@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import SockJsClient from "react-stomp"
+import Chat from "../components/chat/Chat"
+import UserForm from "../components/homepage/UserForm"
 
 const SOCKET_URL = "http://localhost:8080/ws"
 
@@ -7,13 +9,11 @@ const Home = () => {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [room, setRoom] = useState()
-  const [notifications, setNotifications] = useState([])
-  const [messageContent, setMessageContent] = useState("")
   const [messages, setMessages] = useState([])
 
   const clientRef = useRef(null)
 
-  const handleConnect = async () => {
+  const connect = async () => {
     const res = await fetch("http://localhost:8080/room", {
       method: "POST",
       headers: {
@@ -45,7 +45,7 @@ const Home = () => {
     // setNotifications([...notifications, ])
   }
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (messageContent) => {
     const res = await fetch(
       "http://localhost:8080/messages/" + room.id + "?sender=client",
       {
@@ -61,26 +61,28 @@ const Home = () => {
     if (res.ok) {
       const message = await res.json()
       if (message) setMessages([...messages, message])
-
-      setMessageContent("")
     }
   }
 
-  const handleGetNewMessages = async () => {
+  const handleGetNewMessages = async (e) => {
+
     const res = await fetch(
       "http://localhost:8080/messages/new/client/" + room.id
     )
     if (res.ok) {
       const newMessages = await res.json()
+      console.log(newMessages)
       if (newMessages.length === 0) return
       setMessages([...messages, ...newMessages])
     }
   }
 
-  useEffect(() => {
-    handleGetNewMessages()
-    console.log(messages)
-  }, [messages])
+  const handleUserFormSubmit = (formName, formEmail) => {
+    setName(formName)
+    setEmail(formEmail)
+    connect()
+  }
+
 
   return (
     <div className="home">
@@ -99,38 +101,10 @@ const Home = () => {
               },
             }}
           />
-          <input
-            type="text"
-            value={messageContent}
-            onChange={(e) => setMessageContent(e.target.value)}
-          />
-          <button onClick={handleSendMessage}>Send</button>
-          <div className="home__messages">
-            {messages.map((message) => (
-              <p>{message.content}</p>
-            ))}
-          </div>
+         <Chat messages={messages} onSend={handleSendMessage}/>
         </>
       ) : (
-        <div className="home__form">
-          <label className="home__form__name">
-            Name:
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </label>
-          <label className="home__form__name">
-            Email:
-            <input
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <button onClick={handleConnect}>Connect</button>
-        </div>
+        <UserForm onSubmit={handleUserFormSubmit} />
       )}
     </div>
   )
