@@ -48,8 +48,6 @@ public class MessageServiceImpl implements MessageService{
         notification.setMessages(saved);
         template.convertAndSend("/chatroom/"+chatroomId, notification);
 
-
-
         return saved;
     }
 
@@ -77,7 +75,7 @@ public class MessageServiceImpl implements MessageService{
         notification.setChatroom(chatroom);
         notification.setMessages(seenMessages);
 
-        if (sender == "support") {
+        if (sender.equals("support")) {
             template.convertAndSend("/chatroom/notifications", notification);
         } else {
             template.convertAndSend("/chatroom/"+chatroomId, notification);
@@ -104,7 +102,9 @@ public class MessageServiceImpl implements MessageService{
 
         Message saved = save(message);
 
-        if (sender == "support") {
+        System.out.println(sender);
+
+        if (sender.equals("support")) {
             template.convertAndSend("/chatroom/"+chatroomId, notification);
         } else {
             template.convertAndSend("/chatroom/notifications", notification);

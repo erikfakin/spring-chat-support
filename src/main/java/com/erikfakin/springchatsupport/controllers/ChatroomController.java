@@ -48,13 +48,6 @@ public class ChatroomController {
         chatroom.setStatus(Chatroom.Status.ONLINE);
         Chatroom savedChatroom =  chatroomService.save(chatroom);
 
-        Notification notification = new Notification();
-        notification.setType(Notification.Type.CHATROOM_ONLINE);
-        notification.setChatroom(savedChatroom);
-
-        template.convertAndSend("/chatroom/notifications", notification);
-
-
         return savedChatroom;
     }
 

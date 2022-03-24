@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 
 import javax.persistence.EntityNotFoundException;
@@ -51,6 +52,22 @@ public class WebSocketEventListeners {
         }
     }
 
+    // Listens for the client to unsubscribe then finds the chatroom associated with the client session and marks it offline.
+    @EventListener
+    public void onSessionUnsubscribe(SessionUnsubscribeEvent event) {
+        StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
+
+        if (sha.getSessionId().contains("client")) {
+            Chatroom chatroom = chatroomService.findBySessionId(sha.getSessionId());
+            chatroom.setStatus(Chatroom.Status.OFFLINE);
+            chatroomService.save(chatroom);
+
+            Notification notification = new Notification();
+            notification.setType(Notification.Type.CHATROOM_OFFLINE);
+            notification.setChatroom(chatroom);
+            template.convertAndSend("/chatroom/notifications", notification);
+        }
+    }
 
     // Listens for the client to disconnect then finds the chatroom associated with the client session and marks it offline.
     @EventListener
@@ -68,6 +85,9 @@ public class WebSocketEventListeners {
             template.convertAndSend("/chatroom/notifications", notification);
         }
     }
+
+
+
 
 
 

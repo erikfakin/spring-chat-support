@@ -13,6 +13,8 @@ public class Message {
     @GeneratedValue(strategy= GenerationType.AUTO)
     @Id
     private Long id;
+
+    @Lob
     private String content;
 
     @Temporal(TemporalType.TIMESTAMP)

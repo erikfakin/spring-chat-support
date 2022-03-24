@@ -4,6 +4,7 @@ import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.UUID;
 
 @Entity
@@ -18,14 +19,24 @@ public class Chatroom {
 
     private Status status;
 
-    public enum Status {
-        ONLINE, OFFLINE
-    }
+
 
     @ManyToOne
     private ClientUser clientUser;
 
     @Column(unique = true)
     private String sessionId;
+
+    private Date timestamp;
+
+
+    public enum Status {
+        ONLINE, OFFLINE
+    }
+
+    @PrePersist
+    private void onCreate () {
+        timestamp = new Date();
+    }
 
 }

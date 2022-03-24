@@ -1,0 +1,33 @@
+.home .chat__messages__message.support {
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  align-self: flex-start;
+  border-top-left-radius: 0;
+}
+
+.home .chat__messages__message.client {
+  padding: 1rem;
+  background-color: aliceblue;
+  border-radius: 10px;
+  align-self: flex-end;
+  border-top-right-radius: 0;
+}
+.chat {
+  width: min(900px, 90%);
+  margin: auto;
+}
+.chat__messages {
+  display: flex;
+  flex-flow: column;
+}
+.chat__messages__message__icon {
+  display: none;
+}
+.chat__messages__message {
+  margin: 0.1rem;
+}
+.support + .client .chat__messages__message__icon,
+.client + .support .chat__messages__message__icon {
+  display: block;
+}

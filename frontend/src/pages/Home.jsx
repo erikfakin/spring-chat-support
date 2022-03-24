@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 import SockJsClient from "react-stomp"
+import {
+  getNewChatroom,
+  getNewMessagesClient,
+  sendMessageClient,
+} from "../adapters/xhr"
 import Chat from "../components/chat/Chat"
-import UserForm from "../components/homepage/UserForm"
+import "./Home.scss"
 
 const SOCKET_URL = "http://localhost:8080/ws"
 
@@ -14,65 +19,51 @@ const Home = () => {
   const clientRef = useRef(null)
 
   const connect = async () => {
-    const res = await fetch("http://localhost:8080/room", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        email,
-      }),
-    })
-    if (res.ok) {
-      setRoom(await res.json())
+    console.log(name, email)
+    const res = await getNewChatroom(name, email)
+
+    if (!res.error) {
+      setRoom(res.data)
     }
   }
 
-  const handleMessageReceived = (message) => {
-    switch (message.type) {
-      case "CHATROOM_ONLINE":
-        console.log("chatroom online")
-        break
+  const handleOnNotification = (notification) => {
+    switch (notification.type) {
       case "MESSAGE_NEW":
         handleGetNewMessages()
         break
-
+      case "MESSAGE_SEEN":
+        handleSeenMessages(notification.messages)
+        break
       default:
         break
     }
-    console.log(message)
-    // setNotifications([...notifications, ])
   }
 
-  const handleSendMessage = async (messageContent) => {
-    const res = await fetch(
-      "http://localhost:8080/messages/" + room.id + "?sender=client",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: messageContent,
-        }),
-      }
-    )
-    if (res.ok) {
-      const message = await res.json()
+  const handleSeenMessages = async (msgs) => {
+    const messagesTmp = [...messages]
+
+    msgs.forEach((msg) => {
+      messagesTmp.find((message) => message.id === msg.id).seen = msg.seen
+    })
+
+    setMessages([...messagesTmp])
+  }
+
+  const handleOnSend = async (messageContent) => {
+    const res = await sendMessageClient(room.id, messageContent)
+
+    if (!res.error) {
+      const message = res.data
       if (message) setMessages([...messages, message])
     }
   }
 
   const handleGetNewMessages = async (e) => {
+    const res = await getNewMessagesClient(room.id)
 
-    const res = await fetch(
-      "http://localhost:8080/messages/new/client/" + room.id
-    )
-    if (res.ok) {
-      const newMessages = await res.json()
-      console.log(newMessages)
-      if (newMessages.length === 0) return
+    if (!res.error) {
+      const newMessages = res.data
       setMessages([...messages, ...newMessages])
     }
   }
@@ -83,7 +74,6 @@ const Home = () => {
     connect()
   }
 
-
   return (
     <div className="home">
       {room ? (
@@ -91,7 +81,7 @@ const Home = () => {
           <SockJsClient
             url={SOCKET_URL}
             topics={["/chatroom/" + room.id]}
-            onMessage={(msg) => handleMessageReceived(msg)}
+            onMessage={(notification) => handleOnNotification(notification)}
             debug={true}
             ref={clientRef}
             options={{
@@ -101,10 +91,28 @@ const Home = () => {
               },
             }}
           />
-         <Chat messages={messages} onSend={handleSendMessage}/>
+          <Chat messages={messages} onSend={handleOnSend} />
         </>
       ) : (
-        <UserForm onSubmit={handleUserFormSubmit} />
+        <div className="userForm">
+          <label className="userForm__name">
+            Name:
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+          <label className="userForm__email">
+            Email:
+            <input
+              type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
+          <button onClick={handleUserFormSubmit}>Connect</button>
+        </div>
       )}
     </div>
   )

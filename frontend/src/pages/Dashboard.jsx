@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from "react"
 import SockJsClient from "react-stomp"
+import {
+  getAllChatrooms,
+  getAllMessagesInChatroom,
+  getChatrromById,
+  getNewChatroom,
+  getNewMessagesSupport,
+  sendMessageSupport,
+} from "../adapters/xhr"
+import Chat from "../components/chat/Chat"
 
 const SOCKET_URL = "http://localhost:8080/ws"
 
@@ -12,45 +21,61 @@ const Dashboard = () => {
   const roomRef = useRef(null)
 
   useEffect(() => {
-    getOnlineChatrooms()
+    getChatrooms()
   }, [])
 
-  const getOnlineChatrooms = async () => {
-    const res = await fetch("http://localhost:8080/room/status/online")
-    setChatrooms(await res.json())
+  const getChatrooms = async () => {
+    const res = await getAllChatrooms()
+    if (!res.error) setChatrooms(res.data)
   }
 
-  const getRoomById = async (id) => {
-    const res = await fetch("http://localhost:8080/room/" + id)
-    setRoom(await res.json())
+  const getRoomById = async (chatroomId) => {
+    const res = await getChatrromById(chatroomId)
+    if (!res.error) setRoom(res.data)
   }
 
   const handleGetNewMessages = async () => {
-    const res = await fetch(
-      "http://localhost:8080/messages/new/support/" + room.id
-    )
-    const newMessages = await res.json()
-
-    console.log(newMessages)
-
-    if (messages.length === 0) return
-
-    setMessages([...messages, ...newMessages])
+    if (!room) return
+    const res = await getNewMessagesSupport(room.id)
+    if (!res.error) {
+      setMessages([...messages, ...res.data])
+    }
   }
 
-  const handleMessageReceived = (msg) => {
-    switch (msg.type) {
+  const handleChatroomOffline = (chatroom) => {
+    const chatroomsTmp = [...chatrooms]
+    chatroomsTmp.find((chtrm) => chtrm.id === chatroom.id).status = "OFFLINE"
+    setChatrooms([...chatroomsTmp])
+  }
+
+  const handleNewChatroom = async (chatroom) => {
+    setChatrooms([...chatrooms, chatroom])
+  }
+
+  const handleSeenMessages = async (msgs) => {
+    const messagesTmp = [...messages]
+
+    msgs.forEach((msg) => {
+      messagesTmp.find((message) => message.id === msg.id).seen = msg.seen
+    })
+
+    setMessages([...messagesTmp])
+  }
+
+  const handleNotificationReceived = (notification) => {
+    switch (notification.type) {
       case "CHATROOM_ONLINE":
-        getOnlineChatrooms()
+        handleNewChatroom(notification.chatroom)
         break
       case "CHATROOM_OFFLINE":
-        getOnlineChatrooms()
+        handleChatroomOffline(notification.chatroom)
         break
 
       case "MESSAGE_NEW":
         handleGetNewMessages()
         break
       case "MESSAGE_SEEN":
+        handleSeenMessages(notification.messages)
         break
 
       default:
@@ -59,18 +84,29 @@ const Dashboard = () => {
   }
 
   const getMessages = async () => {
-    console.log("get all messages")
     if (!room) return
-    const res = await fetch("http://localhost:8080/messages/" + room.id)
-    const resMessages = await res.json()
-    setMessages([...resMessages])
+    const res = await getAllMessagesInChatroom(room.id)
+    if (!res.error) {
+      setMessages([...res.data])
+    }
   }
 
   useEffect(() => {
     getMessages()
   }, [room])
 
-  useEffect(() => {console.log(messages)}, [messages])
+  useEffect(() => {
+    console.log(chatrooms)
+  }, [chatrooms])
+
+  const handleOnSend = async (messageContent) => {
+    const res = await sendMessageSupport(room.id, messageContent)
+
+    if (!res.error) {
+      const message = res.data
+      if (message) setMessages([...messages, message])
+    }
+  }
 
   return (
     <div className="dashboard">
@@ -78,7 +114,7 @@ const Dashboard = () => {
         <SockJsClient
           url={SOCKET_URL}
           topics={["/chatroom/notifications"]}
-          onMessage={(msg) => handleMessageReceived(msg)}
+          onMessage={(notification) => handleNotificationReceived(notification)}
           debug={true}
           ref={notificationsRef}
         />
@@ -89,8 +125,8 @@ const Dashboard = () => {
                 getRoomById(chatroom.id)
               }}
             >
-              {chatroom.clientUser.name}
-             
+              {chatroom.id}
+              {chatroom.status}
             </div>
           )
         })}
@@ -98,9 +134,7 @@ const Dashboard = () => {
       <div className="dashboard__chatroom">
         {room && (
           <>
-            {messages.map((message) => (
-              <p>{message.content}</p>
-            ))}
+            <Chat messages={messages} onSend={handleOnSend} />
           </>
         )}
       </div>
