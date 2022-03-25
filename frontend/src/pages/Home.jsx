@@ -19,9 +19,7 @@ const Home = () => {
   const clientRef = useRef(null)
 
   const connect = async () => {
-    console.log(name, email)
     const res = await getNewChatroom(name, email)
-
     if (!res.error) {
       setRoom(res.data)
     }
@@ -42,17 +40,14 @@ const Home = () => {
 
   const handleSeenMessages = async (msgs) => {
     const messagesTmp = [...messages]
-
     msgs.forEach((msg) => {
       messagesTmp.find((message) => message.id === msg.id).seen = msg.seen
     })
-
     setMessages([...messagesTmp])
   }
 
   const handleOnSend = async (messageContent) => {
     const res = await sendMessageClient(room.id, messageContent)
-
     if (!res.error) {
       const message = res.data
       if (message) setMessages([...messages, message])
@@ -61,7 +56,6 @@ const Home = () => {
 
   const handleGetNewMessages = async (e) => {
     const res = await getNewMessagesClient(room.id)
-
     if (!res.error) {
       const newMessages = res.data
       setMessages([...messages, ...newMessages])
@@ -91,7 +85,7 @@ const Home = () => {
               },
             }}
           />
-          <Chat messages={messages} onSend={handleOnSend} />
+          <Chat messages={messages} onSend={handleOnSend} user="client"/>
         </>
       ) : (
         <div className="userForm">

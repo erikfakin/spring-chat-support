@@ -1,20 +1,23 @@
 import { useState } from "react"
+import './Chat.scss'
 
-const Chat = ({ messages, onSend }) => {
+const Chat = ({ messages, onSend, user }) => {
   const [messageContent, setMessageContent] = useState("")
 
   return (
-    <div className="chat">
+    <div className={`chat chat${user}`}>
       <div className="chat__messages">
         {messages.map((message) => (
-          <div className={`chat__messages__message ${message.sender}`}>
-            <div className="chat__messages__message__icon">
-              {message.sender.substring(0, 1)}
-            </div>
-            <div className="chat__messages__message__content">
-              <div className="">{message.content}</div>
-              <div className="chat__messageschat__messages__message__status">
-                {message.seen}
+          <div className={`chat__message ${message.sender}`}>
+            <div className="chat__message__wrapper">
+              <div className="chat__message__icon">
+                {message.sender.substring(0, 1)}
+              </div>
+              <div className="chat__message__content">
+                <div className="">{message.content}</div>
+                <div className="chat__message__status">
+                  {message.seen}
+                </div>
               </div>
             </div>
           </div>
