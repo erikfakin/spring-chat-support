@@ -1,8 +1,13 @@
-import { useState } from "react"
-import './Chat.scss'
+import { useEffect, useRef, useState } from "react"
+import "./Chat.scss"
 
 const Chat = ({ messages, onSend, user }) => {
   const [messageContent, setMessageContent] = useState("")
+  const messagesBottomRef = useRef(null)
+
+  useEffect(() => {
+    messagesBottomRef.current.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
 
   return (
     <div className={`chat chat${user}`}>
@@ -15,13 +20,12 @@ const Chat = ({ messages, onSend, user }) => {
               </div>
               <div className="chat__message__content">
                 <div className="">{message.content}</div>
-                <div className="chat__message__status">
-                  {message.seen}
-                </div>
+                <div className="chat__message__status">{message.seen}</div>
               </div>
             </div>
           </div>
         ))}
+        <div className="chat__messages__bottom" ref={messagesBottomRef}></div>
       </div>
       <div className="chat__input">
         <label className="chat__input__message">

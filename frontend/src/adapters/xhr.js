@@ -91,3 +91,14 @@ export const getChatrromById = async (chatroomId) => {
   }
   return { error: res.status }
 }
+
+export const countNewMessagesByChatroom = async (chatroomId) => {
+  const res = await fetch(
+    "http://localhost:8080/messages/new/support/" + chatroomId + "/count"
+  )
+
+  if (res.ok) {
+    return { data: await res.json() }
+  }
+  return { error: res.status }
+}

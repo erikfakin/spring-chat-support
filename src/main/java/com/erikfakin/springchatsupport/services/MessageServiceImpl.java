@@ -9,10 +9,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +30,7 @@ public class MessageServiceImpl implements MessageService{
     @Override
     public List<Message> findAllByChatroomId(UUID chatroomId) {
         List<Message> seenMessages = messageRepository.findAllByChatroomId(chatroomId).stream().map(message -> {
-            if (message.getSender().equals("client")) {
+            if (message.getSender().equals("client") && Objects.isNull(message.getSeen())) {
                 message.setSeen(new Date());
             }
             return message;

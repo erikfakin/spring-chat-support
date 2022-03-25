@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import SockJsClient from "react-stomp"
 import {
+  countNewMessagesByChatroom,
   getAllChatrooms,
   getAllMessagesInChatroom,
   getChatrromById,
@@ -26,7 +27,24 @@ const Dashboard = () => {
 
   const getChatrooms = async () => {
     const res = await getAllChatrooms()
-    if (!res.error) setChatrooms(res.data)
+    if (!res.error) {
+      const chatroomsWithCount = await Promise.all(
+        res.data.map(async (room) => {
+          const countData = await countNewMessagesByChatroom(room.id)
+          return { ...room, countNewMessages: countData.data }
+        })
+      )
+      setChatrooms(chatroomsWithCount)
+    }
+  }
+
+  const updateChatroomNewMessagesCount = async (chatroom) => {
+    const chatroomsTmp = [...chatrooms]
+    const countData = await countNewMessagesByChatroom(chatroom.id)
+    const count = countData.data
+    chatroomsTmp.find((chtrm) => chtrm.id === chatroom.id).countNewMessages =
+      count
+    setChatrooms([...chatroomsTmp])
   }
 
   const getRoomById = async (chatroomId) => {
@@ -34,12 +52,14 @@ const Dashboard = () => {
     if (!res.error) setRoom(res.data)
   }
 
-  const handleGetNewMessages = async () => {
-    if (!room) return
+  const handleGetNewMessages = async (chatroom) => {
+    updateChatroomNewMessagesCount(chatroom)
+    if (!room || room.id !== chatroom.id) return
     const res = await getNewMessagesSupport(room.id)
     if (!res.error) {
       setMessages([...messages, ...res.data])
     }
+    getChatrooms()
   }
 
   const handleChatroomOffline = (chatroom) => {
@@ -52,9 +72,8 @@ const Dashboard = () => {
     setChatrooms([...chatrooms, chatroom])
   }
 
-  const handleSeenMessages = async (msgs) => {
+  const handleSeenMessages = async (msgs, chatroom) => {
     const messagesTmp = [...messages]
-
     msgs.forEach((msg) => {
       messagesTmp.find((message) => message.id === msg.id).seen = msg.seen
     })
@@ -72,10 +91,10 @@ const Dashboard = () => {
         break
 
       case "MESSAGE_NEW":
-        handleGetNewMessages()
+        handleGetNewMessages(notification.chatroom)
         break
       case "MESSAGE_SEEN":
-        handleSeenMessages(notification.messages)
+        handleSeenMessages(notification.messages, notification.chatroom)
         break
 
       default:
@@ -89,15 +108,12 @@ const Dashboard = () => {
     if (!res.error) {
       setMessages([...res.data])
     }
+    getChatrooms()
   }
 
   useEffect(() => {
     getMessages()
   }, [room])
-
-  useEffect(() => {
-    console.log(chatrooms)
-  }, [chatrooms])
 
   const handleOnSend = async (messageContent) => {
     const res = await sendMessageSupport(room.id, messageContent)
@@ -121,12 +137,14 @@ const Dashboard = () => {
         {chatrooms.map((chatroom) => {
           return (
             <div
+              key={chatroom.id}
               onClick={() => {
                 getRoomById(chatroom.id)
               }}
             >
               {chatroom.id}
               {chatroom.status}
+              {chatroom.countNewMessages}
             </div>
           )
         })}
@@ -134,7 +152,7 @@ const Dashboard = () => {
       <div className="dashboard__chatroom">
         {room && (
           <>
-            <Chat messages={messages} onSend={handleOnSend} />
+            <Chat messages={messages} onSend={handleOnSend} user="support" />
           </>
         )}
       </div>

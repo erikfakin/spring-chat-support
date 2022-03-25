@@ -85,7 +85,7 @@ const Home = () => {
               },
             }}
           />
-          <Chat messages={messages} onSend={handleOnSend} user="client"/>
+          <Chat messages={messages} onSend={handleOnSend} user="client" />
         </>
       ) : (
         <div className="userForm">
