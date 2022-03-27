@@ -1,7 +1,5 @@
-import { API_ROOM_URL, API_URL } from "../configuration/configuration"
-
 export const getNewChatroom = async (name, email) => {
-  const res = await fetch(API_ROOM_URL, {
+  const res = await fetch(process.env.REACT_APP_BASE_URL + "/room", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -18,14 +16,18 @@ export const getNewChatroom = async (name, email) => {
 }
 
 export const getAllMessagesInChatroom = async (roomId) => {
-  const res = await fetch(API_URL + roomId)
+  const res = await fetch(
+    process.env.REACT_APP_BASE_URL + "/messages/" + roomId
+  )
   if (res.ok) {
     return { data: await res.json() }
   } else return { error: res.status }
 }
 
 export const getNewMessagesClient = async (roomId) => {
-  const res = await fetch(API_URL + "new/client/" + roomId)
+  const res = await fetch(
+    process.env.REACT_APP_BASE_URL + "/messages/new/client/" + roomId
+  )
   if (res.ok) {
     const newMessages = await res.json()
     if (newMessages.length === 0) return { data: [] }
@@ -35,7 +37,9 @@ export const getNewMessagesClient = async (roomId) => {
 }
 
 export const getNewMessagesSupport = async (roomId) => {
-  const res = await fetch(API_URL + "new/support/" + roomId)
+  const res = await fetch(
+    process.env.REACT_APP_BASE_URL + "/messages/new/support/" + roomId
+  )
   if (res.ok) {
     const newMessages = await res.json()
     if (newMessages.length === 0) return { data: [] }
@@ -45,15 +49,18 @@ export const getNewMessagesSupport = async (roomId) => {
 }
 
 export const sendMessageClient = async (roomId, messageContent) => {
-  const res = await fetch(API_URL + roomId + "?sender=client", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      content: messageContent,
-    }),
-  })
+  const res = await fetch(
+    process.env.REACT_APP_BASE_URL + "/messages/" + roomId + "?sender=client",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: messageContent,
+      }),
+    }
+  )
   if (res.ok) {
     return { data: await res.json() }
   }
@@ -61,15 +68,18 @@ export const sendMessageClient = async (roomId, messageContent) => {
 }
 
 export const sendMessageSupport = async (roomId, messageContent) => {
-  const res = await fetch(API_URL + roomId + "?sender=support", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      content: messageContent,
-    }),
-  })
+  const res = await fetch(
+    process.env.REACT_APP_BASE_URL + "/messages/" + roomId + "?sender=support",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: messageContent,
+      }),
+    }
+  )
   if (res.ok) {
     return { data: await res.json() }
   }
@@ -77,7 +87,7 @@ export const sendMessageSupport = async (roomId, messageContent) => {
 }
 
 export const getAllChatrooms = async () => {
-  const res = await fetch(API_ROOM_URL + "all")
+  const res = await fetch(process.env.REACT_APP_BASE_URL + "/room/all")
   if (res.ok) {
     return { data: await res.json() }
   }
@@ -85,7 +95,9 @@ export const getAllChatrooms = async () => {
 }
 
 export const getChatrromById = async (chatroomId) => {
-  const res = await fetch(API_ROOM_URL + chatroomId)
+  const res = await fetch(
+    process.env.REACT_APP_BASE_URL + "/room/" + chatroomId
+  )
   if (res.ok) {
     return { data: await res.json() }
   }
@@ -93,7 +105,12 @@ export const getChatrromById = async (chatroomId) => {
 }
 
 export const countNewMessagesByChatroom = async (chatroomId) => {
-  const res = await fetch(API_URL + "new/support/" + chatroomId + "/count")
+  const res = await fetch(
+    process.env.REACT_APP_BASE_URL +
+      "/messages/new/support/" +
+      chatroomId +
+      "/count"
+  )
 
   if (res.ok) {
     return { data: await res.json() }

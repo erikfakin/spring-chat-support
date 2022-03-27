@@ -8,7 +8,7 @@ import {
   getNewMessagesSupport,
   sendMessageSupport,
 } from "../../adapters/xhr"
-import { SOCKET_URL } from "../../configuration/configuration"
+
 import Chat from "./Chat"
 import ChatroomList from "./ChatroomList"
 
@@ -125,7 +125,7 @@ const SupportChat = () => {
     <div className="supportChat">
       <div className={`supportChat__chatrooms ${room ? "" : "active"}`}>
         <SockJsClient
-          url={SOCKET_URL}
+          url={process.env.REACT_APP_WS_URL}
           topics={["/chatroom/notifications"]}
           onMessage={(notification) => handleOnNotification(notification)}
           debug={true}

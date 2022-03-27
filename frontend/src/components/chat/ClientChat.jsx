@@ -1,7 +1,6 @@
 import { useRef, useState } from "react"
 import SockJsClient from "react-stomp"
 import { getNewMessagesClient, sendMessageClient } from "../../adapters/xhr"
-import { SOCKET_URL } from "../../configuration/configuration"
 import Chat from "./Chat"
 
 const ClientChat = ({ room }) => {
@@ -48,7 +47,7 @@ const ClientChat = ({ room }) => {
   return (
     <>
       <SockJsClient
-        url={SOCKET_URL}
+        url={process.env.REACT_APP_WS_URL}
         topics={["/chatroom/" + room.id]}
         onMessage={(notification) => handleOnNotification(notification)}
         debug={true}
