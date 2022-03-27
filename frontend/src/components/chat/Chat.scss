@@ -1,62 +1,140 @@
 .chatclient .chat__message.support,
 .chatsupport .chat__message.client {
+  align-self: flex-start;
+  .chat__message__content {
+    padding: 1rem;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    border-top-left-radius: 0;
+    margin-left: 2.5rem;
+  }
+  .chat__message__icon {
     align-self: flex-start;
-    .chat__message__content {
-        padding: 1rem;
-        background-color: #f5f5f5;
-        border-radius: 10px;
-        border-top-left-radius: 0;
-        margin-left: 2.5rem;
-    }
-    .chat__message__icon{
-        align-self: flex-start;
-    }
+  }
 }
 
 .chatclient .chat__message.client,
 .chatsupport .chat__message.support {
+  align-self: flex-end;
+  .chat__message__content {
+    padding: 1rem;
+    background-color: aliceblue;
+    border-radius: 10px;
+    border-top-right-radius: 0;
+    margin-right: 2.5rem;
+  }
+  .chat__message__icon {
     align-self: flex-end;
-    .chat__message__content {
-        padding: 1rem;
-        background-color: aliceblue;
-        border-radius: 10px;
-        border-top-right-radius: 0;
-        margin-right: 2.5rem;
-        
-    }
-    .chat__message__icon{
-        align-self: flex-end;
-    }
+  }
 }
 
-.chat__message__wrapper{
-    display: flex;
-        flex-flow: column;
+.chat__message__wrapper {
+  display: flex;
+  flex-flow: column;
 }
 .chat {
-    width: min(900px, 90%);
-    margin: auto;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  height: 100%;
+  margin: auto;
+  position: relative;
 }
 .chat__messages {
-    display: flex;
-    flex-flow: column;
+  width: min(900px, 90%);
+  height: calc(100% - 5rem);
+  overflow: auto;
+  margin: auto;
+  padding: 1rem;
+  display: flex;
+  flex-flow: column;
+  scrollbar-color: #ddd #fff;
+  padding-bottom: 1rem;
+  @media screen and (max-width: "720px") {
+    & {
+      width: 100%;
+    }
+  }
 }
+
+.chat__messages::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+.chat__messages::-webkit-scrollbar-thumb {
+  background: #ddd;
+}
+.chat__messages::-webkit-scrollbar-track {
+  background: #fff;
+}
+
 .chat__message__icon {
-    display: none;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    color: white;
-    align-items: center;
-    justify-content: center;
-    background-color: blue;
+  display: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: white;
+  align-items: center;
+  justify-content: center;
+  background-color: #2196f3;
 }
 .chat__message {
-    margin: 0.1rem;
+  margin: 0.1rem;
 }
 .chat__message:first-child .chat__message__icon,
 .support + .client .chat__message__icon,
 .client + .support .chat__message__icon {
-    display: flex;
+  display: flex;
+}
+.chat__input {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  border: 0;
+  width: 100%;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #ddd;
+  height: 5rem;
+  display: flex;
+  input {
+    width: 100%;
+    border: none;
+    outline: none;
+  }
+}
+.chatsupport .chat__input {
+  border-left: none;
+}
+
+.chat__input__submit {
+  fill: #ffffff;
+  border-radius: 100%;
+  padding: 0.5rem;
+  background: #2196f3;
+  height: 2.5rem;
+  padding-left: 0.7rem;
+  width: 2.5rem;
+  cursor: pointer;
+}
+
+.chat__input__message {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+.chat__message__icon__support,
+.chat__message__icon__client {
+  fill: #fff;
+}
+.chat__message__status {
+  text-align: end;
+  display: flex;
+  align-items: center;
+  font-size: 0.7rem;
+  color: #9e9e9e;
+  justify-content: flex-end;
+}
+.chat__message__status__seen {
+  width: 1rem;
+  fill: #2e7d32;
+  margin-bottom: 0.2rem;
+  margin-left: 0.3rem;
 }

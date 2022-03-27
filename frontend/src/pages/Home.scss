@@ -1,0 +1,60 @@
+.home {
+  height: 100%;
+}
+.userFormWrapper {
+  height: 100%;
+  margin: auto;
+  max-width: 30rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.userForm {
+  padding: 3rem;
+  display: flex;
+  justify-content: center;
+  flex-flow: column;
+  width: 100%;
+  border-radius: 10px;
+  padding: 3rem;
+  align-self: inherit;
+  background: aliceblue;
+  @media screen and (max-width: "720px") {
+    & {
+      height: 100%;
+    }
+  }
+}
+.userForm__title {
+  margin-bottom: 3rem;
+}
+.userForm__description {
+  margin-bottom: 1rem;
+}
+.userForm__name,
+.userForm__email {
+  display: flex;
+  flex-flow: column;
+  margin-top: 1rem;
+  font-size: 1rem;
+  input {
+    padding: 0.5rem;
+    border-radius: 10px;
+    border: 1px solid;
+    outline: none;
+    margin-top: 0.3rem;
+    font-size: 1rem;
+  }
+}
+
+.userForm__submit {
+  margin-top: 3rem;
+  background-color: #2196f3;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  font-size: 1rem;
+}

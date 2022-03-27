@@ -1,7 +1,7 @@
-import { API_URL } from "../configuration/configuration"
+import { API_ROOM_URL, API_URL } from "../configuration/configuration"
 
 export const getNewChatroom = async (name, email) => {
-  const res = await fetch("http://localhost:8080/room", {
+  const res = await fetch(API_ROOM_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export const sendMessageSupport = async (roomId, messageContent) => {
 }
 
 export const getAllChatrooms = async () => {
-  const res = await fetch("http://localhost:8080/room/all")
+  const res = await fetch(API_ROOM_URL + "all")
   if (res.ok) {
     return { data: await res.json() }
   }
@@ -85,7 +85,7 @@ export const getAllChatrooms = async () => {
 }
 
 export const getChatrromById = async (chatroomId) => {
-  const res = await fetch("http://localhost:8080/room/" + chatroomId)
+  const res = await fetch(API_ROOM_URL + chatroomId)
   if (res.ok) {
     return { data: await res.json() }
   }
@@ -93,9 +93,7 @@ export const getChatrromById = async (chatroomId) => {
 }
 
 export const countNewMessagesByChatroom = async (chatroomId) => {
-  const res = await fetch(
-    "http://localhost:8080/messages/new/support/" + chatroomId + "/count"
-  )
+  const res = await fetch(API_URL + "new/support/" + chatroomId + "/count")
 
   if (res.ok) {
     return { data: await res.json() }

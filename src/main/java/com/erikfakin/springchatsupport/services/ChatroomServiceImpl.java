@@ -4,6 +4,7 @@ package com.erikfakin.springchatsupport.services;
 import com.erikfakin.springchatsupport.entities.Chatroom;
 import com.erikfakin.springchatsupport.repositories.ChatroomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class ChatroomServiceImpl implements ChatroomService {
 
     @Override
     public List<Chatroom> findAll() {
-        return chatroomRepository.findAll();
+        return chatroomRepository.findAll(Sort.by(Sort.Direction.DESC, "timestamp"));
     }
 
     @Override

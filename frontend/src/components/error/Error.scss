@@ -1,0 +1,22 @@
+.errorWrapper {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(0 0 0 / 20%);
+}
+.error {
+  background: #fff;
+  padding: 6rem 3rem;
+  border-radius: 10px;
+  position: relative;
+}
+.error__close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 1rem;
+  cursor: pointer;
+}

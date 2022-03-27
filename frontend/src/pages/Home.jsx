@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState } from "react"
-import SockJsClient from "react-stomp"
-import {
-  getNewChatroom,
-  getNewMessagesClient,
-  sendMessageClient,
-} from "../adapters/xhr"
-import Chat from "../components/chat/Chat"
+import { useState } from "react"
+
+import { getNewChatroom } from "../adapters/xhr"
+import ClientChat from "../components/chat/ClientChat"
+import Error from "../components/error/Error"
+import { validateEmail } from "../utils/validation/emailValidation"
 import "./Home.scss"
 
 const SOCKET_URL = "http://localhost:8080/ws"
@@ -14,9 +12,7 @@ const Home = () => {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [room, setRoom] = useState()
-  const [messages, setMessages] = useState([])
-
-  const clientRef = useRef(null)
+  const [error, setError] = useState()
 
   const connect = async () => {
     const res = await getNewChatroom(name, email)
@@ -25,87 +21,60 @@ const Home = () => {
     }
   }
 
-  const handleOnNotification = (notification) => {
-    switch (notification.type) {
-      case "MESSAGE_NEW":
-        handleGetNewMessages()
-        break
-      case "MESSAGE_SEEN":
-        handleSeenMessages(notification.messages)
-        break
-      default:
-        break
-    }
-  }
-
-  const handleSeenMessages = async (msgs) => {
-    const messagesTmp = [...messages]
-    msgs.forEach((msg) => {
-      messagesTmp.find((message) => message.id === msg.id).seen = msg.seen
-    })
-    setMessages([...messagesTmp])
-  }
-
-  const handleOnSend = async (messageContent) => {
-    const res = await sendMessageClient(room.id, messageContent)
-    if (!res.error) {
-      const message = res.data
-      if (message) setMessages([...messages, message])
-    }
-  }
-
-  const handleGetNewMessages = async (e) => {
-    const res = await getNewMessagesClient(room.id)
-    if (!res.error) {
-      const newMessages = res.data
-      setMessages([...messages, ...newMessages])
-    }
-  }
-
   const handleUserFormSubmit = (formName, formEmail) => {
-    setName(formName)
-    setEmail(formEmail)
-    connect()
+    if (validateEmail(email)) {
+      connect()
+    } else {
+      setError(
+        "The format of the provided email is incorrect. Please enter a valid email."
+      )
+    }
+  }
+
+  const handleErrorClose = (e) => {
+    e.stopPropagation()
+    setError()
   }
 
   return (
     <div className="home">
+      {error && <Error error={error} onErrorClose={handleErrorClose} />}
       {room ? (
         <>
-          <SockJsClient
-            url={SOCKET_URL}
-            topics={["/chatroom/" + room.id]}
-            onMessage={(notification) => handleOnNotification(notification)}
-            debug={true}
-            ref={clientRef}
-            options={{
-              sessionId: () => {
-                const sessionId = Math.random().toString(36).slice(-10)
-                return "client-" + sessionId
-              },
-            }}
-          />
-          <Chat messages={messages} onSend={handleOnSend} user="client" />
+          <ClientChat room={room} />
         </>
       ) : (
-        <div className="userForm">
-          <label className="userForm__name">
-            Name:
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </label>
-          <label className="userForm__email">
-            Email:
-            <input
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <button onClick={handleUserFormSubmit}>Connect</button>
+        <div className="userFormWrapper">
+          <div className="userForm">
+            <h1 className="userForm__title">Client support live chat</h1>
+            <p className="userForm__description">
+              Please enter your name and email in the form below to start
+              chatting with our support service.
+            </p>
+            <label className="userForm__name">
+              Name:
+              <input
+                autoFocus
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </label>
+            <label className="userForm__email">
+              Email:
+              <input
+                type="email"
+                value={email}
+                onKeyDown={(e) => {
+                  if (e.key == "Enter") handleUserFormSubmit()
+                }}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+            <button className="userForm__submit" onClick={handleUserFormSubmit}>
+              Connect
+            </button>
+          </div>
         </div>
       )}
     </div>
