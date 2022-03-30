@@ -32,6 +32,4 @@ public class Message {
     private void onCreate() {
         timestamp = new Date();
     }
-
-
 }

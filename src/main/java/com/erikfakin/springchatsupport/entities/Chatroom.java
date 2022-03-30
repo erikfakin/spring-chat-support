@@ -19,8 +19,6 @@ public class Chatroom {
 
     private Status status;
 
-
-
     @ManyToOne
     private ClientUser clientUser;
 
@@ -28,7 +26,6 @@ public class Chatroom {
     private String sessionId;
 
     private Date timestamp;
-
 
     public enum Status {
         ONLINE, OFFLINE
@@ -38,5 +35,4 @@ public class Chatroom {
     private void onCreate () {
         timestamp = new Date();
     }
-
 }

@@ -2,7 +2,6 @@ package com.erikfakin.springchatsupport.controllers;
 
 import com.erikfakin.springchatsupport.entities.Chatroom;
 import com.erikfakin.springchatsupport.entities.ClientUser;
-import com.erikfakin.springchatsupport.models.Notification;
 import com.erikfakin.springchatsupport.services.ChatroomService;
 import com.erikfakin.springchatsupport.services.ClientUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +24,17 @@ public class ChatroomController {
     @Autowired
     private SimpMessagingTemplate template;
 
-    // The client user sends a post request and gets a new chatroom to listen for notifications.
-    // The new chatroom is marked as "online" and a notification is sent to the support user.
-    // If the user already used the chatroom with the email specified, it updates the name and loads that user.
-    // If the email specified is new, we create a new client user.
+    /**
+     * The client user sends a post request and gets a new chatroom to listen for notifications.
+     * The new chatroom is marked as "online" and a notification is sent to the support user.
+     * If the user already used the chatroom with the email specified, it updates the name and loads that user.
+     * If the email specified is new, we create a new client user.
+     */
     @PostMapping()
     public Chatroom getNewChatRoom(@RequestBody ClientUser clientUser, @RequestHeader Map<String, String> header) {
-
+        if (Objects.isNull(clientUser)) {
+            throw new NullPointerException("Client user can't be null.");
+        }
         ClientUser user = clientUserService.findByEmail(clientUser.getEmail());
         if (Objects.isNull(user)) {
             user = new ClientUser();
@@ -51,15 +54,25 @@ public class ChatroomController {
         return savedChatroom;
     }
 
-    // Gets a chatroom by its ID.
+    /**
+     * Gets a chatroom by its ID.
+     */
     @GetMapping("/{id}")
     public Chatroom findById(@PathVariable("id") UUID id) {
+        if (Objects.isNull(id)) {
+            throw new NullPointerException("Chatroom id can't be null.");
+        }
         return chatroomService.findById(id).get();
     }
 
-    // Gets all chatrooms by their statuses.
+    /**
+     * Gets all chatrooms by their statuses.
+     */
     @GetMapping("/status/{status}")
     public List<Chatroom> findAllByStatus(@PathVariable("status") String status) {
+        if (Objects.isNull(status)) {
+            throw new NullPointerException("Chatroom status can't be null");
+        }
         Chatroom.Status chatroomStatus = Chatroom.Status.valueOf(status.toUpperCase());
         return chatroomService.findAllByStatus(chatroomStatus);
     }

@@ -27,9 +27,11 @@ public class WebSocketEventListeners {
     @Autowired
     private SimpMessagingTemplate template;
 
-    // Associates the session ID of the client with the chatroom.
-    // If the destination contains "notifications" we don't want to affect the chatrooms (the support user only listens to notifications globally
-    // We want to associate the client session with the chatroom, so we can mark it as offline once the client disconnects.
+    /**
+     * Associates the session ID of the client with the chatroom.
+     * If the destination contains "notifications" we don't want to affect the chatrooms (the support user only listens to notifications globally.
+     * We want to associate the client session with the chatroom, so we can mark it as offline once the client disconnects.
+     */
     @EventListener
     public void onSessionSubscribe(SessionSubscribeEvent event){
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
@@ -52,7 +54,9 @@ public class WebSocketEventListeners {
         }
     }
 
-    // Listens for the client to unsubscribe then finds the chatroom associated with the client session and marks it offline.
+    /**
+     * Listens for the client to unsubscribe then finds the chatroom associated with the client session and marks it offline.
+     */
     @EventListener
     public void onSessionUnsubscribe(SessionUnsubscribeEvent event) {
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
@@ -69,7 +73,9 @@ public class WebSocketEventListeners {
         }
     }
 
-    // Listens for the client to disconnect then finds the chatroom associated with the client session and marks it offline.
+    /**
+     * Listens for the client to disconnect then finds the chatroom associated with the client session and marks it offline.
+     */
     @EventListener
     public void onSocketDisconnected(SessionDisconnectEvent event) {
         StompHeaderAccessor sha = StompHeaderAccessor.wrap(event.getMessage());
@@ -85,10 +91,4 @@ public class WebSocketEventListeners {
             template.convertAndSend("/chatroom/notifications", notification);
         }
     }
-
-
-
-
-
-
 }
